@@ -12,9 +12,8 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar-test') { 
                     dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                        sh "ls -la" // This will show us if mvnw is actually here
-                        sh "chmod +x mvnw"
-                        sh "./mvnw sonar:sonar"
+                        // We use 'mvn' instead of './mvnw' because the wrapper is missing
+                        sh "mvn sonar:sonar"
                     }
                 }
             }
@@ -32,6 +31,10 @@ pipeline {
             steps {
                 dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
                     sh """
+                    # Build the .jar file first
+                    mvn clean package -DskipTests
+                    
+                    # Build and run the container
                     docker build -t my-app:latest .
                     docker stop my-app-container || true
                     docker rm my-app-container || true
