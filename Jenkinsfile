@@ -12,7 +12,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 // This 'withSonarQubeEnv' block pulls the URL/Token from Jenkins settings
-                withSonarQubeEnv('SonarQube-Server') { 
+                withSonarQubeEnv('sonar-test') { 
                     sh "./mvnw sonar:sonar"
                 }
             }
