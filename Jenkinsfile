@@ -11,9 +11,10 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                // This 'withSonarQubeEnv' block pulls the URL/Token from Jenkins settings
                 withSonarQubeEnv('sonar-test') { 
-                    sh "./mvnw sonar:sonar"
+                    dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+                        sh "chmod +x mvnw" // Ensure the wrapper has execution permission
+                        sh "./mvnw sonar:sonar"
                 }
             }
         }
