@@ -1,41 +1,33 @@
 pipeline {
-    agent { label 'ec2-build-agent' } // Tells Jenkins to run this ON the EC2
+    agent { label 'ec2-build-agent' } 
 
     stages {
-        stage('Clone Code') {
+        stage('Checkout') {
             steps {
-                git 'https://github.com/YOUR_USERNAME/Jenkins-Zero-To-Hero.git'
+                // Jenkins uses the GitHub plugin to pull the latest code
+                checkout scm
             }
         }
 
-        stage('SonarQube Scan') {
+        stage('SonarQube Analysis') {
             steps {
-                // We use the Maven wrapper already in the repo
-                // The scan sends data to localhost:9000 (which is on the EC2)
-                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                    sh "./mvnw sonar:sonar -Dsonar.host.url=http://localhost:9000"
+                // This 'withSonarQubeEnv' block pulls the URL/Token from Jenkins settings
+                withSonarQubeEnv('SonarQube-Server') { 
+                    sh "./mvnw sonar:sonar"
                 }
             }
         }
-
-        stage('Build & Package') {
+        
+        stage('Quality Gate') {
             steps {
-                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                    sh "./mvnw clean package -DskipTests"
-                }
+                // Optional: This stops the pipeline if SonarQube finds too many bugs
+                waitForQualityGate abortPipeline: true
             }
         }
 
-        stage('Docker Deploy') {
+        stage('Build & Deploy') {
             steps {
-                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                    sh """
-                    docker build -t my-tax-app:latest .
-                    docker stop tax-app-container || true
-                    docker rm tax-app-container || true
-                    docker run -d --name tax-app-container -p 8081:8080 my-tax-app:latest
-                    """
-                }
+                sh "docker build -t my-app . && docker run -d -p 80:80 my-app"
             }
         }
     }
