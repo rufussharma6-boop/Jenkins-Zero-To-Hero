@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ec2-build-agent' } 
+    agent { label 'ec2-worker' } 
 
     stages {
         stage('Checkout') {
