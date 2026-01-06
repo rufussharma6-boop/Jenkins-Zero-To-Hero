@@ -13,7 +13,7 @@ pipeline {
                 withSonarQubeEnv('sonar-test') { 
                     dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
                         // We use 'mvn' instead of './mvnw' because the wrapper is missing
-                        sh "mvn sonar:sonar"
+                        sh "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar"
                     }
                 }
             }
